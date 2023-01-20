@@ -115,6 +115,7 @@ class SingleLinkedList {
         // Вызов этого оператора у итератора, не указывающего на существующий элемент списка,
         // приводит к неопределённому поведению
         [[nodiscard]] reference operator*() const noexcept {
+            assert(node_ != nullptr);
             return node_->value;
         }
 
@@ -122,6 +123,7 @@ class SingleLinkedList {
         // Вызов этого оператора у итератора, не указывающего на существующий элемент списка,
         // приводит к неопределённому поведению
         [[nodiscard]] pointer operator->() const noexcept {
+            assert(node_ != nullptr);
             return &(node_->value);
         }
 
@@ -154,8 +156,15 @@ public:
 
         SingleLinkedList tmp;
 
-        for (auto it = other.begin(); it != other.end(); ++it) {
-            tmp.PushBack(it.node_->value);
+
+        if (!other.IsEmpty()) {
+            auto it = other.begin();
+            tmp.PushFront(it.node_->value);
+            auto pos = tmp.begin();
+            ++it;
+            for (; it != other.end(); ++it) {
+                pos = tmp.InsertAfter(pos, it.node_->value);
+            }
         }
 
         // После того как элементы скопированы, обмениваем данные текущего списка и tmp
@@ -226,6 +235,7 @@ public:
      * Если при создании элемента будет выброшено исключение, список останется в прежнем состоянии
      */
     Iterator InsertAfter(ConstIterator pos, const Type &value) {
+        assert(pos.node_ != nullptr);
         auto node = new Node(value, pos.node_->next_node);
         pos.node_->next_node = node;
         ++size_;
@@ -245,6 +255,7 @@ public:
      * Возвращает итератор на элемент, следующий за удалённым
      */
     Iterator EraseAfter(ConstIterator pos) noexcept {
+        assert(pos.node_ != nullptr);
         auto p = pos.node_->next_node;
         pos.node_->next_node = p->next_node;
         delete p;
@@ -677,7 +688,6 @@ void Test3() {
         assert((IntList{1, 2, 4} > IntList{1, 2, 3}));
         assert((IntList{1, 2, 3} >= IntList{1, 2, 3}));
     }
-
     // Копирование списков
     {
         const SingleLinkedList<int> empty_list{};
